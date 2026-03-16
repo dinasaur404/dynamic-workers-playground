@@ -1,0 +1,27 @@
+{
+  "name": "dynamic-workers-playground",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:ui": "node ./scripts/build-ui.mjs",
+    "build": "npm run build:ui && wrangler types",
+    "dev": "npm run build:ui && wrangler types && wrangler dev",
+    "deploy": "npm run build:ui && wrangler types && wrangler deploy",
+    "generate-types": "wrangler types"
+  },
+  "dependencies": {
+    "@cloudflare/worker-bundler": "^0.0.3"
+  },
+  "devDependencies": {
+    "@cloudflare/kumo": "^1.10.0",
+    "@phosphor-icons/react": "^2.1.10",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "esbuild": "^0.25.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.8.2",
+    "wrangler": "^4.56.0"
+  }
+}

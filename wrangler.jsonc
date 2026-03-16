@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dynamic-workers-playground",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-01-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "worker_loaders": [
+    {
+      "binding": "LOADER"
+    }
+  ],
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": [
+        "LogSession"
+      ]
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
