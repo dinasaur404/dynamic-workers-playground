@@ -2,16 +2,18 @@ import { exports } from "cloudflare:workers";
 import { createWorker } from "@cloudflare/worker-bundler";
 import { handleGitHubImport } from "./github";
 
-export { LogSession, LogTailer } from "./logging";
+export { DynamicWorkerTail, LogSession } from "./logging";
 
-const runtimeExports = exports as {
+type LoaderExports = {
   LogSession: {
     getByName(name: string): {
       waitForLogs(): Promise<{ getLogs(timeoutMs: number): Promise<unknown[]> }>;
     };
   };
-  LogTailer(options: { props: { workerName: string } }): Fetcher;
+  DynamicWorkerTail(options: { props: { workerId: string } }): Fetcher;
 };
+
+const runtimeExports = exports as LoaderExports;
 
 interface BundleInfo {
   mainModule: string;
@@ -37,7 +39,7 @@ interface RunRequestBody {
 async function executeWorker(
   worker: WorkerStub,
   state: WorkerState,
-  workerName: string,
+  workerId: string,
   pathname = "/"
 ): Promise<Response> {
   const entrypoint = worker.getEntrypoint() as Fetcher & { __warmup__?: () => Promise<void> };
@@ -51,7 +53,7 @@ async function executeWorker(
   const loadTime = Date.now() - loadStart;
 
   const { buildTime, bundleInfo } = state;
-  const logSessionStub = runtimeExports.LogSession.getByName(workerName);
+  const logSessionStub = runtimeExports.LogSession.getByName(workerId);
   const logWaiter = await logSessionStub.waitForLogs();
 
   const runStart = Date.now();
@@ -142,7 +144,7 @@ function normalizeFiles(files: Record<string, string>): Record<string, string> {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/github" && request.method === "POST") {
@@ -157,14 +159,15 @@ export default {
           return Response.json({ error: "At least one source file is required." }, { status: 400 });
         }
 
-        const workerName = `dynamic-workers-playground-worker-v${version}`;
+        const workerId = `dynamic-workers-playground-worker-v${version}`;
         const normalizedFiles = normalizeFiles(files);
         const state: WorkerState = {
           bundleInfo: null,
           buildTime: 0
         };
+        const contextExports = ctx.exports as LoaderExports;
 
-        const worker = env.LOADER.get(workerName, async () => {
+        const worker = env.LOADER.get(workerId, async () => {
           const buildStart = Date.now();
           const { mainModule, modules, wranglerConfig, warnings } = await createWorker({
             files: normalizedFiles,
@@ -186,18 +189,19 @@ export default {
             compatibilityFlags: wranglerConfig?.compatibilityFlags ?? [],
             env: {
               API_KEY: "sk-example-key-12345",
-              DEBUG: "true"
+              DEBUG: "true",
+              WORKER_ID: workerId
             },
             globalOutbound: null,
             tails: [
-              runtimeExports.LogTailer({
-                props: { workerName }
+              contextExports.DynamicWorkerTail({
+                props: { workerId }
               })
             ]
           };
         });
 
-        return executeWorker(worker, state, workerName, pathname ?? "/");
+        return executeWorker(worker, state, workerId, pathname ?? "/");
       } catch (error) {
         return buildErrorResponse(error);
       }

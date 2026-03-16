@@ -6,6 +6,14 @@ export interface LogEntry {
   timestamp: number;
 }
 
+function normalizeLogMessage(message: unknown): string {
+  if (Array.isArray(message)) {
+    return message.map((entry) => (typeof entry === "string" ? entry : JSON.stringify(entry))).join(" ");
+  }
+
+  return typeof message === "string" ? message : JSON.stringify(message);
+}
+
 class LogWaiter extends RpcTarget {
   private logs: LogEntry[] = [];
   private resolve: ((logs: LogEntry[]) => void) | undefined;
@@ -48,26 +56,32 @@ export class LogSession extends DurableObject {
   }
 }
 
-interface LogTailerProps {
-  workerName: string;
+interface DynamicWorkerTailProps {
+  workerId: string;
 }
 
-export class LogTailer extends WorkerEntrypoint<never, LogTailerProps> {
+export class DynamicWorkerTail extends WorkerEntrypoint<never, DynamicWorkerTailProps> {
   override async tail(events: TraceItem[]) {
-    const logSessionStub = exports.LogSession.getByName(this.ctx.props.workerName);
+    const logSessionStub = exports.LogSession.getByName(this.ctx.props.workerId);
 
     for (const event of events) {
       const logs: LogEntry[] = event.logs.map((log: TraceLog) => ({
         level: log.level,
-        message: Array.isArray(log.message)
-          ? log.message.map((message) => (typeof message === "string" ? message : JSON.stringify(message))).join(" ")
-          : typeof log.message === "string"
-            ? log.message
-            : JSON.stringify(log.message),
+        message: normalizeLogMessage(log.message),
         timestamp: log.timestamp
       }));
 
       if (logs.length > 0) {
+        for (const log of logs) {
+          console.log({
+            source: "dynamic-worker-tail",
+            workerId: this.ctx.props.workerId,
+            level: log.level,
+            message: log.message,
+            timestamp: log.timestamp
+          });
+        }
+
         await logSessionStub.addLogs(logs);
       }
     }
