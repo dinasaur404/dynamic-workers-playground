@@ -85,11 +85,13 @@ function toLogEvents(event: TraceItem, workerId: string): StructuredDynamicWorke
 }
 
 function toRealtimeLogEntries(events: StructuredDynamicWorkerEvent[]): LogEntry[] {
-  return events.map((event) => ({
-    level: event.level,
-    message: event.kind === "exception" && event.name ? `${event.name}: ${event.message}` : event.message,
-    timestamp: event.timestamp
-  }));
+  return events
+    .filter((event) => event.kind !== "request")
+    .map((event) => ({
+      level: event.level,
+      message: event.kind === "exception" && event.name ? `${event.name}: ${event.message}` : event.message,
+      timestamp: event.timestamp
+    }));
 }
 
 class LogWaiter extends RpcTarget {

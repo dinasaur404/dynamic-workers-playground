@@ -1,13 +1,13 @@
 # Dynamic Workers Playground
 
-An opinionated get-started example that rebuilds the original `workers-builder` basic playground on top of [`@cloudflare/worker-bundler`](https://www.npmjs.com/package/@cloudflare/worker-bundler) and gives it a Kumo-flavored UI.
+This is a playground for executing Dynamic Workers.
 
-It is designed to show dynamic workers in action quickly:
+You can use it to:
 
 - write or import worker code
-- bundle it at runtime with `worker-bundler`
-- execute it through a `WorkerLoader` binding
-- inspect response timing, logs, and bundled modules
+- bundle it at runtime with [`@cloudflare/worker-bundler`](https://www.npmjs.com/package/@cloudflare/worker-bundler)
+- run it through a dynamic worker loader
+- see real-time responses, logs, timing, and bundle details
 
 ## Deploy to Cloudflare
 
@@ -15,14 +15,15 @@ Use the button below to deploy directly from this GitHub repository.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/dinasaur404/dynamic-workers-playground)
 
-## Why this example exists
+## What it demonstrates
 
-This project is intentionally not a full IDE. The goal is to keep the interface simple enough that the dynamic worker lifecycle is the star:
+- **Runtime bundling** -- `@cloudflare/worker-bundler` resolves npm dependencies and bundles source files entirely at runtime, inside a Worker
+- **Dynamic execution** -- bundled modules are loaded and executed on-demand through a `worker_loaders` binding, with automatic caching when source has not changed
+- **Log capture pipeline** -- a Tail Worker forwards `console.*` output from dynamically loaded workers to a Durable Object, which streams logs back to the caller in real time
+- **Execution timing** -- granular build/load/run breakdown with cold vs. warm detection, showing the full Dynamic Worker lifecycle
+- **GitHub import** -- pull source files from any public repo to bundle and run, demonstrating that `worker-bundler` handles real-world code with dependencies
 
-- `@cloudflare/worker-bundler` bundles source files and npm dependencies at runtime
-- the host worker uses a `worker_loaders` binding to boot generated workers
-- a tail worker plus Durable Object captures console output for the UI
-- the frontend uses Kumo components and styling for a polished default experience
+The UI is intentionally simple so the Dynamic Worker lifecycle stays front and center.
 
 ## Local development
 
@@ -50,7 +51,3 @@ src/
   logging.ts     Tail worker + Durable Object logging
   client/        Frontend source used to build public assets
 ```
-
-## Important note
-
-`worker_loaders` is currently a closed beta capability. This example is meant for environments where that binding is already available.
