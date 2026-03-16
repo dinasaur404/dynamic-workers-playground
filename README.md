@@ -11,9 +11,9 @@ It is designed to show dynamic workers in action quickly:
 
 ## Deploy to Cloudflare
 
-Replace `YOUR_GITHUB_USERNAME` after you publish this repo, then the button will work as-is.
+Use the button below to deploy directly from this GitHub repository.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/YOUR_GITHUB_USERNAME/dynamic-workers-playground)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/dinasaur404/dynamic-workers-playground)
 
 ## Why this example exists
 
