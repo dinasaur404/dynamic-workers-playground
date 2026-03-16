@@ -7,7 +7,7 @@
     "build:ui": "node ./scripts/build-ui.mjs",
     "build": "npm run build:ui && wrangler types",
     "dev": "npm run build:ui && wrangler types && wrangler dev",
-    "deploy": "npm run build:ui && wrangler types && wrangler deploy",
+    "deploy": "wrangler deploy",
     "generate-types": "wrangler types"
   },
   "dependencies": {
