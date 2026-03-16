@@ -6,12 +6,90 @@ export interface LogEntry {
   timestamp: number;
 }
 
+type DynamicWorkerEventKind = "request" | "log" | "exception";
+
+interface StructuredDynamicWorkerEvent {
+  source: "dynamic-worker-tail";
+  workerId: string;
+  kind: DynamicWorkerEventKind;
+  level: string;
+  message: string;
+  timestamp: number;
+  outcome?: string;
+  method?: string;
+  url?: string;
+  path?: string;
+  status?: number;
+  name?: string;
+  stack?: string;
+}
+
 function normalizeLogMessage(message: unknown): string {
   if (Array.isArray(message)) {
     return message.map((entry) => (typeof entry === "string" ? entry : JSON.stringify(entry))).join(" ");
   }
 
   return typeof message === "string" ? message : JSON.stringify(message);
+}
+
+function isFetchTraceEvent(event: TraceItem["event"]): event is TraceItemFetchEventInfo {
+  return event !== null && "request" in event;
+}
+
+function toRequestSummary(event: TraceItem, workerId: string): StructuredDynamicWorkerEvent | null {
+  if (!isFetchTraceEvent(event.event)) {
+    return null;
+  }
+
+  const url = event.event.request.url;
+  const path = new URL(url).pathname;
+  const status = event.event.response?.status;
+
+  return {
+    source: "dynamic-worker-tail",
+    workerId,
+    kind: "request",
+    level: event.outcome === "exception" ? "error" : "info",
+    message: `${event.event.request.method} ${path}${status !== undefined ? ` -> ${status}` : ""} (${event.outcome})`,
+    timestamp: event.eventTimestamp ?? Date.now(),
+    outcome: event.outcome,
+    method: event.event.request.method,
+    url,
+    path,
+    status
+  };
+}
+
+function toExceptionEvents(event: TraceItem, workerId: string): StructuredDynamicWorkerEvent[] {
+  return event.exceptions.map((exception: TraceException) => ({
+    source: "dynamic-worker-tail",
+    workerId,
+    kind: "exception",
+    level: "error",
+    message: exception.message,
+    timestamp: exception.timestamp,
+    name: exception.name,
+    stack: exception.stack
+  }));
+}
+
+function toLogEvents(event: TraceItem, workerId: string): StructuredDynamicWorkerEvent[] {
+  return event.logs.map((log: TraceLog) => ({
+    source: "dynamic-worker-tail",
+    workerId,
+    kind: "log",
+    level: log.level,
+    message: normalizeLogMessage(log.message),
+    timestamp: log.timestamp
+  }));
+}
+
+function toRealtimeLogEntries(events: StructuredDynamicWorkerEvent[]): LogEntry[] {
+  return events.map((event) => ({
+    level: event.level,
+    message: event.kind === "exception" && event.name ? `${event.name}: ${event.message}` : event.message,
+    timestamp: event.timestamp
+  }));
 }
 
 class LogWaiter extends RpcTarget {
@@ -65,24 +143,22 @@ export class DynamicWorkerTail extends WorkerEntrypoint<never, DynamicWorkerTail
     const logSessionStub = exports.LogSession.getByName(this.ctx.props.workerId);
 
     for (const event of events) {
-      const logs: LogEntry[] = event.logs.map((log: TraceLog) => ({
-        level: log.level,
-        message: normalizeLogMessage(log.message),
-        timestamp: log.timestamp
-      }));
+      const structuredEvents: StructuredDynamicWorkerEvent[] = [];
+      const requestSummary = toRequestSummary(event, this.ctx.props.workerId);
 
-      if (logs.length > 0) {
-        for (const log of logs) {
-          console.log({
-            source: "dynamic-worker-tail",
-            workerId: this.ctx.props.workerId,
-            level: log.level,
-            message: log.message,
-            timestamp: log.timestamp
-          });
+      if (requestSummary) {
+        structuredEvents.push(requestSummary);
+      }
+
+      structuredEvents.push(...toLogEvents(event, this.ctx.props.workerId));
+      structuredEvents.push(...toExceptionEvents(event, this.ctx.props.workerId));
+
+      if (structuredEvents.length > 0) {
+        for (const structuredEvent of structuredEvents) {
+          console.log(structuredEvent);
         }
 
-        await logSessionStub.addLogs(logs);
+        await logSessionStub.addLogs(toRealtimeLogEntries(structuredEvents));
       }
     }
   }
