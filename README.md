@@ -23,8 +23,6 @@ Use the button below to deploy directly from this GitHub repository.
 - **Execution timing** -- granular build/load/run breakdown with cold vs. warm detection, showing the full Dynamic Worker lifecycle
 - **GitHub import** -- pull source files from any public repo to bundle and run, demonstrating that `worker-bundler` handles real-world code with dependencies
 
-The UI is intentionally simple so the Dynamic Worker lifecycle stays front and center.
-
 ## Local development
 
 ```bash
