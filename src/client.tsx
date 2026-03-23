@@ -650,7 +650,7 @@ export function App() {
                 <code
                   style={{
                     fontFamily: "monospace",
-                    background: "var(--color-kumo-surface-2, #f3f4f6)",
+                    background: "var(--color-kumo-recessed)",
                     padding: "1px 4px",
                     borderRadius: 3,
                   }}
@@ -790,14 +790,16 @@ export function App() {
                   fontSize: 13,
                   fontWeight: 600,
                   color: "var(--text-color-kumo-default)",
+                  minWidth: 0,
+                  flexShrink: 1,
                 }}
               >
-                <FileText size={16} />
+                <FileText size={16} style={{ flexShrink: 0 }} />
                 <span>Source Files</span>
               </div>
 
               <div
-                style={{ display: "flex", alignItems: "center", gap: 8 }}
+                style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}
               >
                 <Select
                   aria-label="Load example"
@@ -1145,8 +1147,7 @@ export function App() {
                             color: "#16a34a",
                             whiteSpace: "pre-wrap",
                             wordBreak: "break-word",
-                            background:
-                              "var(--color-kumo-surface-2, #f9fafb)",
+                            background: "var(--color-kumo-recessed)",
                             padding: 10,
                             borderRadius: 6,
                           }}
@@ -1176,7 +1177,7 @@ export function App() {
                     </p>
                     <div
                       style={{
-                        background: "var(--color-kumo-surface-2, #f9fafb)",
+                        background: "var(--color-kumo-recessed)",
                         borderRadius: 6,
                         padding: 10,
                         fontFamily: "monospace",
@@ -1250,8 +1251,7 @@ export function App() {
                         <div
                           key={label}
                           style={{
-                            background:
-                              "var(--color-kumo-surface-2, #f9fafb)",
+                            background: "var(--color-kumo-recessed)",
                             borderRadius: 6,
                             padding: "8px 10px",
                             textAlign: "center",
@@ -1295,9 +1295,9 @@ export function App() {
                     >
                       Bundle Info
                     </p>
-                    <div
+                     <div
                       style={{
-                        background: "var(--color-kumo-surface-2, #f9fafb)",
+                        background: "var(--color-kumo-recessed)",
                         borderRadius: 6,
                         padding: 10,
                         fontSize: 12,
@@ -1327,10 +1327,8 @@ export function App() {
                             <span
                               key={m}
                               style={{
-                                background:
-                                  "var(--color-kumo-brand-subtle, #fff7ed)",
-                                color:
-                                  "var(--color-kumo-brand, #f6821f)",
+                                background: "var(--color-kumo-tint)",
+                                color: "var(--color-kumo-brand, #f6821f)",
                                 borderRadius: 4,
                                 padding: "2px 6px",
                                 fontSize: 11,
