@@ -7,6 +7,11 @@ html, body, #root {
   min-height: 100vh;
 }
 
+[data-highlighted] {
+  background: var(--color-kumo-fill) !important;
+  cursor: pointer;
+}
+
 html {
   color-scheme: light;
   background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 60%, #e0f2fe 100%);
