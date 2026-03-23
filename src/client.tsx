@@ -848,7 +848,7 @@ export function App() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
             gap: 16,
             flex: 1,
           }}
@@ -859,6 +859,7 @@ export function App() {
               display: "flex",
               flexDirection: "column",
               minHeight: 600,
+              minWidth: 0,
             }}
           >
             {/* Panel header */}
@@ -928,77 +929,99 @@ export function App() {
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
-                gap: 2,
-                padding: "0 8px",
+                alignItems: "stretch",
                 borderBottom: "1px solid var(--color-kumo-border, #e5e7eb)",
-                overflowX: "auto",
+                minWidth: 0,
               }}
             >
-              {orderedFiles.map((filename) => (
-                <button
-                  key={filename}
-                  type="button"
-                  onClick={() => setCurrentFile(filename)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "8px 10px",
-                    fontSize: 12,
-                    fontFamily: "monospace",
-                    background: "none",
-                    border: "none",
-                    borderBottom:
-                      filename === currentFile
-                        ? "2px solid var(--color-kumo-brand, #f6821f)"
-                        : "2px solid transparent",
-                    color:
-                      filename === currentFile
-                        ? "var(--text-color-kumo-default)"
-                        : "var(--text-color-kumo-subdued)",
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  <span>{filename}</span>
-                  {filename !== "package.json" ? (
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFile(filename);
-                      }}
-                      style={{
-                        fontSize: 10,
-                        lineHeight: 1,
-                        opacity: 0.6,
-                        cursor: "pointer",
-                        padding: "0 2px",
-                      }}
-                    >
-                      ×
-                    </span>
-                  ) : null}
-                </button>
-              ))}
-
-              <button
-                type="button"
-                onClick={() => setAddFileOpen(true)}
-                aria-label="Add new file"
+              <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  padding: "6px 8px",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "var(--text-color-kumo-subdued)",
-                  borderRadius: 4,
+                  gap: 2,
+                  padding: "0 8px",
+                  overflowX: "auto",
+                  overflowY: "hidden",
+                  flex: "1 1 auto",
+                  minWidth: 0,
+                  flexWrap: "nowrap",
                 }}
               >
-                <Plus size={14} weight="bold" />
-              </button>
+                {orderedFiles.map((filename) => (
+                  <button
+                    key={filename}
+                    type="button"
+                    onClick={() => setCurrentFile(filename)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "8px 10px",
+                      fontSize: 12,
+                      fontFamily: "monospace",
+                      background: "none",
+                      border: "none",
+                      borderBottom:
+                        filename === currentFile
+                          ? "2px solid var(--color-kumo-brand, #f6821f)"
+                          : "2px solid transparent",
+                      color:
+                        filename === currentFile
+                          ? "var(--text-color-kumo-default)"
+                          : "var(--text-color-kumo-subdued)",
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      flex: "0 0 auto",
+                    }}
+                  >
+                    <span>{filename}</span>
+                    {filename !== "package.json" ? (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFile(filename);
+                        }}
+                        style={{
+                          fontSize: 10,
+                          lineHeight: 1,
+                          opacity: 0.6,
+                          cursor: "pointer",
+                          padding: "0 2px",
+                        }}
+                      >
+                        ×
+                      </span>
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 8px 0 0",
+                  flexShrink: 0,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setAddFileOpen(true)}
+                  aria-label="Add new file"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "6px 8px",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--text-color-kumo-subdued)",
+                    borderRadius: 4,
+                  }}
+                >
+                  <Plus size={14} weight="bold" />
+                </button>
+              </div>
             </div>
 
             {/* Editor */}
@@ -1101,6 +1124,7 @@ export function App() {
               display: "flex",
               flexDirection: "column",
               minHeight: 600,
+              minWidth: 0,
             }}
           >
             <div
