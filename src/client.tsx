@@ -595,9 +595,6 @@ export function App() {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        background: dark
-          ? "linear-gradient(135deg, #0f172a 0%, #0c1a2e 60%, #0f2040 100%)"
-          : "linear-gradient(135deg, #eff6ff 0%, #f0f9ff 60%, #e0f2fe 100%)",
       }}
     >
       <div
