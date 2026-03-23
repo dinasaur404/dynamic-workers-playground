@@ -1,7 +1,6 @@
 import "./styles.css";
 import {
   Button,
-  Dialog,
   Input,
   Select,
   Surface,
@@ -18,8 +17,103 @@ import {
   Sun,
   X,
 } from "@phosphor-icons/react";
+import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { useMemo, useState } from "react";
+
+interface ModalProps {
+  open: boolean;
+  onClose: () => void;
+  title: React.ReactNode;
+  size?: "sm" | "lg";
+  children: React.ReactNode;
+}
+
+function Modal({ open, onClose, title, size = "sm", children }: ModalProps) {
+  if (!open) return null;
+  return createPortal(
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+      }}
+    >
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "rgba(0,0,0,0.45)",
+        }}
+      />
+      {/* Card */}
+      <div
+        style={{
+          position: "relative",
+          background: "var(--color-kumo-surface)",
+          border: "1px solid var(--color-kumo-line, #e5e7eb)",
+          borderRadius: 12,
+          padding: 24,
+          width: size === "lg" ? 480 : 360,
+          maxWidth: "calc(100vw - 2rem)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 600,
+              color: "var(--text-color-kumo-default)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            {title}
+          </div>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              border: "1px solid var(--color-kumo-line, #e5e7eb)",
+              background: "var(--color-kumo-recessed)",
+              cursor: "pointer",
+              color: "var(--text-color-kumo-default)",
+              flexShrink: 0,
+            }}
+          >
+            <X size={14} />
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}
 
 type PlaygroundFiles = Record<string, string>;
 
@@ -1398,145 +1492,104 @@ export function App() {
         <PoweredByWorkers />
       </div>
 
-      {/* Add file dialog */}
-      <Dialog.Root open={addFileOpen} onOpenChange={setAddFileOpen}>
-        <Dialog size="sm">
-          <div
+      {/* Add file modal */}
+      <Modal
+        open={addFileOpen}
+        onClose={() => setAddFileOpen(false)}
+        title="Add New File"
+        size="sm"
+      >
+        <Input
+          autoFocus
+          aria-label="New file name"
+          placeholder="e.g., src/utils.ts"
+          value={addFileName}
+          onChange={(e) => setAddFileName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleAddFile();
+          }}
+        />
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <Button variant="secondary" onClick={() => setAddFileOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleAddFile}>
+            Add File
+          </Button>
+        </div>
+      </Modal>
+
+      {/* GitHub import modal */}
+      <Modal
+        open={githubOpen}
+        onClose={() => setGithubOpen(false)}
+        title={
+          <>
+            <GithubLogo size={18} weight="fill" />
+            Import from GitHub
+          </>
+        }
+        size="lg"
+      >
+        <p
+          style={{
+            margin: 0,
+            fontSize: 13,
+            color: "var(--text-color-kumo-subdued)",
+            overflowWrap: "break-word",
+          }}
+        >
+          Paste a GitHub URL to import files from any repository. Supports
+          repos, branches, and subdirectories.
+        </p>
+        <Input
+          autoFocus
+          aria-label="GitHub URL"
+          placeholder="https://github.com/owner/repo/tree/branch/path"
+          value={githubUrl}
+          onChange={(e) => setGitHubUrl(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void importFromGitHub();
+          }}
+          style={{ width: "100%", boxSizing: "border-box" }}
+        />
+        <div style={{ fontSize: 12 }}>
+          <span style={{ color: "var(--text-color-kumo-subdued)" }}>
+            Example:{" "}
+          </span>
+          <button
+            type="button"
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 16,
+              background: "none",
+              border: "none",
+              padding: 0,
+              fontSize: 12,
+              cursor: "pointer",
+              color: "var(--color-kumo-brand, #f6821f)",
+              textDecoration: "underline",
             }}
+            onClick={() =>
+              setGitHubUrl(
+                "https://github.com/honojs/starter/tree/main/templates/cloudflare-workers"
+              )
+            }
           >
-            <Dialog.Title>Add New File</Dialog.Title>
-            <Dialog.Close
-              render={(p) => (
-                <Button {...p} variant="secondary" shape="square" aria-label="Close">
-                  <X size={16} />
-                </Button>
-              )}
-            />
-          </div>
-
-          <Input
-            autoFocus
-            aria-label="New file name"
-            placeholder="e.g., src/utils.ts"
-            value={addFileName}
-            onChange={(e) => setAddFileName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleAddFile();
-            }}
-          />
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 8,
-              marginTop: 16,
-            }}
+            Hono Starter
+          </button>
+        </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <Button variant="secondary" onClick={() => setGithubOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            loading={importing}
+            onClick={() => void importFromGitHub()}
           >
-            <Dialog.Close render={(p) => <Button {...p} variant="secondary">Cancel</Button>} />
-            <Button variant="primary" onClick={handleAddFile}>
-              Add File
-            </Button>
-          </div>
-        </Dialog>
-      </Dialog.Root>
-
-      {/* GitHub import dialog */}
-      <Dialog.Root open={githubOpen} onOpenChange={setGithubOpen}>
-        <Dialog size="lg">
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 8,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <GithubLogo size={20} weight="fill" />
-              <Dialog.Title>Import from GitHub</Dialog.Title>
-            </div>
-            <Dialog.Close
-              render={(p) => (
-                <Button {...p} variant="secondary" shape="square" aria-label="Close">
-                  <X size={16} />
-                </Button>
-              )}
-            />
-          </div>
-
-          <Dialog.Description
-            style={{
-              overflowWrap: "break-word",
-              wordBreak: "break-word",
-              maxWidth: "100%",
-            }}
-          >
-            Paste a GitHub URL to import files from any repository. Supports
-            repos, branches, and subdirectories.
-          </Dialog.Description>
-
-          <Input
-            autoFocus
-            aria-label="GitHub URL"
-            placeholder="https://github.com/owner/repo/tree/branch/path"
-            value={githubUrl}
-            onChange={(e) => setGitHubUrl(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") void importFromGitHub();
-            }}
-            style={{ marginTop: 12, width: "100%", boxSizing: "border-box" }}
-          />
-
-          <div style={{ marginTop: 8, fontSize: 12 }}>
-            <span style={{ color: "var(--text-color-kumo-subdued)" }}>
-              Example:{" "}
-            </span>
-            <button
-              type="button"
-              style={{
-                background: "none",
-                border: "none",
-                padding: 0,
-                fontSize: 12,
-                cursor: "pointer",
-                color: "var(--color-kumo-brand, #f6821f)",
-                textDecoration: "underline",
-              }}
-              onClick={() =>
-                setGitHubUrl(
-                  "https://github.com/honojs/starter/tree/main/templates/cloudflare-workers"
-                )
-              }
-            >
-              Hono Starter
-            </button>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 8,
-              marginTop: 16,
-            }}
-          >
-            <Dialog.Close render={(p) => <Button {...p} variant="secondary">Cancel</Button>} />
-            <Button
-              variant="primary"
-              loading={importing}
-              onClick={() => void importFromGitHub()}
-            >
-              Import
-            </Button>
-          </div>
-        </Dialog>
-      </Dialog.Root>
+            Import
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
