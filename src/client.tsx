@@ -902,7 +902,7 @@ export function App() {
                       </Button>
                     }
                   />
-                  <DropdownMenu.Content>
+                  <DropdownMenu.Content style={{ background: "var(--color-kumo-surface)" }}>
                     {EXAMPLES.map((example) => (
                       <DropdownMenu.Item
                         key={example.id}
