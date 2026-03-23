@@ -42,7 +42,9 @@ async function executeWorker(
   workerId: string,
   pathname = "/"
 ): Promise<Response> {
-  const entrypoint = worker.getEntrypoint() as Fetcher & { __warmup__?: () => Promise<void> };
+  const entrypoint = worker.getEntrypoint() as Fetcher & {
+    __warmup__?: () => Promise<void>;
+  };
 
   const loadStart = Date.now();
   try {
@@ -57,7 +59,9 @@ async function executeWorker(
   const logWaiter = await logSessionStub.waitForLogs();
 
   const runStart = Date.now();
-  const request = new Request(`https://example.com${pathname.startsWith("/") ? pathname : `/${pathname}`}`);
+  const request = new Request(
+    `https://example.com${pathname.startsWith("/") ? pathname : `/${pathname}`}`
+  );
 
   let workerResponse: Response;
   let responseBody = "";
@@ -69,13 +73,13 @@ async function executeWorker(
 
     if (workerResponse.status >= 500) {
       workerError = {
-        message: responseBody || "Worker returned an internal error."
+        message: responseBody || "Worker returned an internal error.",
       };
     }
   } catch (error) {
     workerError = {
       message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     };
     workerResponse = new Response("Worker execution failed", { status: 500 });
   }
@@ -89,11 +93,15 @@ async function executeWorker(
   });
 
   return Response.json({
-    bundleInfo: bundleInfo ?? { mainModule: "(cached)", modules: [], warnings: [] },
+    bundleInfo: bundleInfo ?? {
+      mainModule: "(cached)",
+      modules: [],
+      warnings: [],
+    },
     response: {
       status: workerResponse.status,
       headers,
-      body: responseBody
+      body: responseBody,
     },
     workerError,
     logs,
@@ -101,8 +109,8 @@ async function executeWorker(
       buildTime,
       loadTime,
       runTime,
-      totalTime: buildTime + loadTime + runTime
-    }
+      totalTime: buildTime + loadTime + runTime,
+    },
   });
 }
 
@@ -111,13 +119,15 @@ function buildErrorResponse(error: unknown): Response {
   return Response.json(
     {
       error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     },
     { status: 500 }
   );
 }
 
-function normalizeFiles(files: Record<string, string>): Record<string, string> {
+function normalizeFiles(
+  files: Record<string, string>
+): Record<string, string> {
   const normalized = Object.fromEntries(
     Object.entries(files)
       .map(([path, contents]) => [path.trim(), contents])
@@ -127,13 +137,17 @@ function normalizeFiles(files: Record<string, string>): Record<string, string> {
   if (!normalized["package.json"]) {
     const entryPoint =
       normalized["src/index.ts"] || normalized["src/index.js"]
-        ? Object.keys(normalized).find((file) => file === "src/index.ts" || file === "src/index.js")
-        : Object.keys(normalized).find((file) => file.endsWith(".ts") || file.endsWith(".js"));
+        ? Object.keys(normalized).find(
+            (file) => file === "src/index.ts" || file === "src/index.js"
+          )
+        : Object.keys(normalized).find(
+            (file) => file.endsWith(".ts") || file.endsWith(".js")
+          );
 
     normalized["package.json"] = JSON.stringify(
       {
         name: "dynamic-workers-playground-worker",
-        main: entryPoint ?? "src/index.ts"
+        main: entryPoint ?? "src/index.ts",
       },
       null,
       2
@@ -144,7 +158,11 @@ function normalizeFiles(files: Record<string, string>): Record<string, string> {
 }
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext
+  ): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/github" && request.method === "POST") {
@@ -153,51 +171,57 @@ export default {
 
     if (url.pathname === "/api/run" && request.method === "POST") {
       try {
-        const { files, version, pathname, options } = (await request.json()) as RunRequestBody;
+        const { files, version, pathname, options } =
+          (await request.json()) as RunRequestBody;
 
         if (!files || Object.keys(files).length === 0) {
-          return Response.json({ error: "At least one source file is required." }, { status: 400 });
+          return Response.json(
+            { error: "At least one source file is required." },
+            { status: 400 }
+          );
         }
 
         const workerId = `dynamic-workers-playground-worker-v${version}`;
         const normalizedFiles = normalizeFiles(files);
         const state: WorkerState = {
           bundleInfo: null,
-          buildTime: 0
+          buildTime: 0,
         };
-        const contextExports = ctx.exports as LoaderExports;
+        const contextExports = (ctx as unknown as { exports: LoaderExports }).exports;
 
         const worker = env.LOADER.get(workerId, async () => {
           const buildStart = Date.now();
-          const { mainModule, modules, wranglerConfig, warnings } = await createWorker({
-            files: normalizedFiles,
-            bundle: options?.bundle ?? true,
-            minify: options?.minify ?? false
-          });
+          const { mainModule, modules, wranglerConfig, warnings } =
+            await createWorker({
+              files: normalizedFiles,
+              bundle: options?.bundle ?? true,
+              minify: options?.minify ?? false,
+            });
 
           state.buildTime = Date.now() - buildStart;
           state.bundleInfo = {
             mainModule,
             modules: Object.keys(modules),
-            warnings: warnings ?? []
+            warnings: warnings ?? [],
           };
 
           return {
             mainModule,
             modules: modules as Record<string, string>,
-            compatibilityDate: wranglerConfig?.compatibilityDate ?? "2026-01-01",
+            compatibilityDate:
+              wranglerConfig?.compatibilityDate ?? "2026-01-01",
             compatibilityFlags: wranglerConfig?.compatibilityFlags ?? [],
             env: {
               API_KEY: "sk-example-key-12345",
               DEBUG: "true",
-              WORKER_ID: workerId
+              WORKER_ID: workerId,
             },
             globalOutbound: null,
             tails: [
               contextExports.DynamicWorkerTail({
-                props: { workerId }
-              })
-            ]
+                props: { workerId },
+              }),
+            ],
           };
         });
 
@@ -207,6 +231,6 @@ export default {
       }
     }
 
-    return env.ASSETS.fetch(request);
-  }
-};
+    return new Response("Not found", { status: 404 });
+  },
+} satisfies ExportedHandler<Env>;
