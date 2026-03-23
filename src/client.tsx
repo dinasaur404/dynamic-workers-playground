@@ -317,7 +317,7 @@ function LayersLogo() {
       className="brand-logo"
       viewBox="0 0 48 49"
       aria-hidden="true"
-      style={{ width: 32, height: 32, flexShrink: 0 }}
+      style={{ width: 32, height: 32, flexShrink: 0, fill: "#f6821f" }}
     >
       <path d="m18.63 37.418-9.645-12.9 9.592-12.533-1.852-2.527L5.917 23.595l-.015 1.808 10.86 14.542z" />
       <path d="M21.997 6.503h-3.712l13.387 18.3-13.072 17.7h3.735L35.4 24.81z" />
