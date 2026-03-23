@@ -36,6 +36,33 @@ interface RunRequestBody {
   };
 }
 
+async function createWorkerId(
+  files: Record<string, string>,
+  options?: RunRequestBody["options"]
+): Promise<string> {
+  const sortedFiles = Object.keys(files)
+    .sort()
+    .map((path) => [path, files[path]]);
+
+  const payload = JSON.stringify({
+    files: sortedFiles,
+    bundle: options?.bundle ?? true,
+    minify: options?.minify ?? false,
+  });
+
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(payload)
+  );
+  const hash = Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0")
+  )
+    .join("")
+    .slice(0, 16);
+
+  return `dynamic-workers-playground-worker-${hash}`;
+}
+
 async function executeWorker(
   worker: WorkerStub,
   state: WorkerState,
@@ -171,7 +198,7 @@ export default {
 
     if (url.pathname === "/api/run" && request.method === "POST") {
       try {
-        const { files, version, pathname, options } =
+        const { files, pathname, options } =
           (await request.json()) as RunRequestBody;
 
         if (!files || Object.keys(files).length === 0) {
@@ -181,8 +208,8 @@ export default {
           );
         }
 
-        const workerId = `dynamic-workers-playground-worker-v${version}`;
         const normalizedFiles = normalizeFiles(files);
+        const workerId = await createWorkerId(normalizedFiles, options);
         const state: WorkerState = {
           bundleInfo: null,
           buildTime: 0,
