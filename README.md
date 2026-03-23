@@ -1,6 +1,6 @@
 # Dynamic Workers Playground
 
-A playground for writing, bundling, and running Cloudflare Worker code directly in your browser — using [`@cloudflare/worker-bundler`](https://www.npmjs.com/package/@cloudflare/worker-bundler) to resolve npm dependencies and bundle source files entirely at runtime, inside a Worker.
+This is a playground for executing Dynamic Workers.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/dinasaur404/dynamic-workers-playground)
 
@@ -10,6 +10,8 @@ You can use it to:
 - bundle it at runtime with [`@cloudflare/worker-bundler`](https://www.npmjs.com/package/@cloudflare/worker-bundler)
 - run it through a dynamic worker loader
 - see real-time responses, logs, timing, and bundle details
+
+> **Heads up:** This playground executes arbitrary Worker code on your account. Before sharing the URL publicly, we recommend protecting it with [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/self-hosted-apps/) to restrict access to trusted users. Alternatively, test it locally first with `npm start` before deploying.
 
 ## What it demonstrates
 
