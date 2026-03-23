@@ -1,7 +1,6 @@
 import "./styles.css";
 import {
   Button,
-  Checkbox,
   Dialog,
   Input,
   Select,
@@ -965,16 +964,36 @@ export function App() {
               </div>
 
               <div style={{ display: "flex", gap: 16 }}>
-                <Checkbox
-                  label="Bundle"
-                  checked={bundle}
-                  onCheckedChange={(c) => setBundle(Boolean(c))}
-                />
-                <Checkbox
-                  label="Minify"
-                  checked={minify}
-                  onCheckedChange={(c) => setMinify(Boolean(c))}
-                />
+                {[
+                  { label: "Bundle", checked: bundle, onChange: setBundle },
+                  { label: "Minify", checked: minify, onChange: setMinify },
+                ].map(({ label, checked, onChange }) => (
+                  <label
+                    key={label}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      fontSize: 13,
+                      color: "var(--text-color-kumo-default)",
+                      cursor: "pointer",
+                      userSelect: "none",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => onChange(e.target.checked)}
+                      style={{
+                        width: 14,
+                        height: 14,
+                        cursor: "pointer",
+                        accentColor: "var(--color-kumo-brand, #f6821f)",
+                      }}
+                    />
+                    {label}
+                  </label>
+                ))}
               </div>
             </div>
           </Surface>
@@ -1391,14 +1410,13 @@ export function App() {
             }}
           >
             <Dialog.Title>Add New File</Dialog.Title>
-            <Button
-              variant="secondary"
-              shape="square"
-              aria-label="Close"
-              onClick={() => setAddFileOpen(false)}
-            >
-              <X size={16} />
-            </Button>
+            <Dialog.Close
+              render={(p) => (
+                <Button {...p} variant="secondary" shape="square" aria-label="Close">
+                  <X size={16} />
+                </Button>
+              )}
+            />
           </div>
 
           <Input
@@ -1420,9 +1438,7 @@ export function App() {
               marginTop: 16,
             }}
           >
-            <Button variant="secondary" onClick={() => setAddFileOpen(false)}>
-              Cancel
-            </Button>
+            <Dialog.Close render={(p) => <Button {...p} variant="secondary">Cancel</Button>} />
             <Button variant="primary" onClick={handleAddFile}>
               Add File
             </Button>
@@ -1445,14 +1461,13 @@ export function App() {
               <GithubLogo size={20} weight="fill" />
               <Dialog.Title>Import from GitHub</Dialog.Title>
             </div>
-            <Button
-              variant="secondary"
-              shape="square"
-              aria-label="Close"
-              onClick={() => setGithubOpen(false)}
-            >
-              <X size={16} />
-            </Button>
+            <Dialog.Close
+              render={(p) => (
+                <Button {...p} variant="secondary" shape="square" aria-label="Close">
+                  <X size={16} />
+                </Button>
+              )}
+            />
           </div>
 
           <Dialog.Description
@@ -1511,9 +1526,7 @@ export function App() {
               marginTop: 16,
             }}
           >
-            <Button variant="secondary" onClick={() => setGithubOpen(false)}>
-              Cancel
-            </Button>
+            <Dialog.Close render={(p) => <Button {...p} variant="secondary">Cancel</Button>} />
             <Button
               variant="primary"
               loading={importing}
