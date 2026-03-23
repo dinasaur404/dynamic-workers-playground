@@ -2,7 +2,6 @@ import "./styles.css";
 import {
   Button,
   Input,
-  Select,
   Surface,
   Textarea,
 } from "@cloudflare/kumo";
@@ -894,22 +893,31 @@ export function App() {
               <div
                 style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}
               >
-                <Select
+                <select
                   aria-label="Load example"
-                  placeholder="Load Example..."
-                  value={exampleValue as never}
-                  onValueChange={(value) => {
-                    if (value) {
-                      handleExampleChange(String(value));
-                    }
+                  value={exampleValue ?? ""}
+                  onChange={(e) => {
+                    if (e.target.value) handleExampleChange(e.target.value);
+                  }}
+                  style={{
+                    fontSize: 13,
+                    padding: "6px 28px 6px 10px",
+                    borderRadius: 6,
+                    border: "1px solid var(--color-kumo-line, #e5e7eb)",
+                    background: "var(--color-kumo-surface)",
+                    color: "var(--text-color-kumo-default)",
+                    cursor: "pointer",
+                    appearance: "auto",
+                    height: 32,
                   }}
                 >
+                  <option value="" disabled>Load Example...</option>
                   {EXAMPLES.map((example) => (
-                    <Select.Option key={example.id} value={example.id}>
+                    <option key={example.id} value={example.id}>
                       {example.label}
-                    </Select.Option>
+                    </option>
                   ))}
-                </Select>
+                </select>
 
                 <Button
                   variant="secondary"
