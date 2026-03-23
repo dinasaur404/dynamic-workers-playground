@@ -13,8 +13,10 @@ import {
   GithubLogo,
   Info,
   Monitor,
+  Moon,
   Play,
   Plus,
+  Sun,
   X,
 } from "@phosphor-icons/react";
 import { createRoot } from "react-dom/client";
@@ -287,6 +289,28 @@ function consolePrefix(level: string) {
   return "›";
 }
 
+function useDarkMode() {
+  const [dark, setDark] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      localStorage.getItem("theme") === "dark" ||
+      (!localStorage.getItem("theme") &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
+    );
+  });
+
+  function toggle() {
+    const next = !dark;
+    setDark(next);
+    const mode = next ? "dark" : "light";
+    document.documentElement.setAttribute("data-mode", mode);
+    document.documentElement.style.colorScheme = mode;
+    localStorage.setItem("theme", mode);
+  }
+
+  return { dark, toggle };
+}
+
 function LayersLogo() {
   return (
     <svg
@@ -337,6 +361,7 @@ function PoweredByWorkers() {
 }
 
 export function App() {
+  const { dark, toggle: toggleDark } = useDarkMode();
   const initialExample = EXAMPLES[0];
   const [files, setFiles] = useState<PlaygroundFiles>({
     ...initialExample.files,
@@ -570,7 +595,9 @@ export function App() {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "var(--color-kumo-base, #f9fafb)",
+        background: dark
+          ? "linear-gradient(135deg, #0f172a 0%, #0c1a2e 60%, #0f2040 100%)"
+          : "linear-gradient(135deg, #eff6ff 0%, #f0f9ff 60%, #e0f2fe 100%)",
       }}
     >
       <div
@@ -674,34 +701,57 @@ export function App() {
             </div>
           </div>
 
-          <div
-            aria-live="polite"
-            style={{ display: "flex", alignItems: "center", gap: 8 }}
-          >
-            <span
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              aria-live="polite"
+              style={{ display: "flex", alignItems: "center", gap: 8 }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  display: "inline-block",
+                  backgroundColor:
+                    status.tone === "success"
+                      ? "#16a34a"
+                      : status.tone === "error"
+                        ? "#dc2626"
+                        : status.tone === "running"
+                          ? "#f59e0b"
+                          : "#9ca3af",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 13,
+                  color: "var(--text-color-kumo-subdued)",
+                }}
+              >
+                {status.label}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+              onClick={toggleDark}
               style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                display: "inline-block",
-                backgroundColor:
-                  status.tone === "success"
-                    ? "#16a34a"
-                    : status.tone === "error"
-                      ? "#dc2626"
-                      : status.tone === "running"
-                        ? "#f59e0b"
-                        : "#9ca3af",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 13,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                border: "1px solid var(--color-kumo-border, #e5e7eb)",
+                background: "var(--color-kumo-surface, #ffffff)",
+                cursor: "pointer",
                 color: "var(--text-color-kumo-subdued)",
+                flexShrink: 0,
               }}
             >
-              {status.label}
-            </span>
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
           </div>
         </div>
 
@@ -1410,7 +1460,13 @@ export function App() {
             </Button>
           </div>
 
-          <Dialog.Description>
+          <Dialog.Description
+            style={{
+              overflowWrap: "break-word",
+              wordBreak: "break-word",
+              maxWidth: "100%",
+            }}
+          >
             Paste a GitHub URL to import files from any repository. Supports
             repos, branches, and subdirectories.
           </Dialog.Description>
@@ -1424,7 +1480,7 @@ export function App() {
             onKeyDown={(e) => {
               if (e.key === "Enter") void importFromGitHub();
             }}
-            style={{ marginTop: 12 }}
+            style={{ marginTop: 12, width: "100%", boxSizing: "border-box" }}
           />
 
           <div style={{ marginTop: 8, fontSize: 12 }}>
