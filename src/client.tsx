@@ -1,11 +1,13 @@
 import "./styles.css";
 import {
   Button,
+  DropdownMenu,
   Input,
   Surface,
   Textarea,
 } from "@cloudflare/kumo";
 import {
+  CaretDown,
   FileText,
   GithubLogo,
   Info,
@@ -476,7 +478,6 @@ export function App() {
   } | null>(null);
   const [running, setRunning] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [exampleValue, setExampleValue] = useState<string | null>(null);
   const [addFileOpen, setAddFileOpen] = useState(false);
   const [githubOpen, setGithubOpen] = useState(false);
   const [addFileName, setAddFileName] = useState("");
@@ -497,7 +498,6 @@ export function App() {
     const example = EXAMPLES.find((item) => item.id === exampleId);
     if (!example) return;
     applyFiles({ ...example.files });
-    setExampleValue(null);
   }
 
   function updateCurrentFile(value: string) {
@@ -893,31 +893,26 @@ export function App() {
               <div
                 style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}
               >
-                <select
-                  aria-label="Load example"
-                  value={exampleValue ?? ""}
-                  onChange={(e) => {
-                    if (e.target.value) handleExampleChange(e.target.value);
-                  }}
-                  style={{
-                    fontSize: 13,
-                    padding: "6px 28px 6px 10px",
-                    borderRadius: 6,
-                    border: "1px solid var(--color-kumo-line, #e5e7eb)",
-                    background: "var(--color-kumo-surface)",
-                    color: "var(--text-color-kumo-default)",
-                    cursor: "pointer",
-                    appearance: "auto",
-                    height: 32,
-                  }}
-                >
-                  <option value="" disabled>Load Example...</option>
-                  {EXAMPLES.map((example) => (
-                    <option key={example.id} value={example.id}>
-                      {example.label}
-                    </option>
-                  ))}
-                </select>
+                <DropdownMenu>
+                  <DropdownMenu.Trigger
+                    render={
+                      <Button variant="secondary">
+                        Load Example...
+                        <CaretDown size={13} />
+                      </Button>
+                    }
+                  />
+                  <DropdownMenu.Content>
+                    {EXAMPLES.map((example) => (
+                      <DropdownMenu.Item
+                        key={example.id}
+                        onClick={() => handleExampleChange(example.id)}
+                      >
+                        {example.label}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu>
 
                 <Button
                   variant="secondary"
