@@ -11,7 +11,7 @@ You can use it to:
 - run it through a dynamic worker loader
 - see real-time responses, logs, timing, and bundle details
 
-> **Heads up:** This playground executes arbitrary Worker code on your account. Before sharing the URL publicly, we recommend protecting it with [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/self-hosted-apps/) to restrict access to trusted users. Alternatively, test it locally first with `npm start` before deploying.
+> **Note:** This playground will allow users to excute arbitrary Worker code once it's deployed. Before sharing the URL publicly, we recommend protecting it with [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/self-hosted-apps/) to restrict access to trusted users. Alternatively, test it locally first with `npm start` before deploying.
 
 ## What it demonstrates
 
